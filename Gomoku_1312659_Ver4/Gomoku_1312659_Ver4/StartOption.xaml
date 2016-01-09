@@ -1,0 +1,24 @@
+﻿<Window x:Class="Gomoku_1312659_Ver4.StartOption"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Gomoku_1312659_Ver4"
+        mc:Ignorable="d"
+        Title="Thiết lập" Height="250" Width="300" WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
+    <Grid>
+        <Button x:Name="btnStart" Content="Khởi động" Width="140" Height="32" Margin="68,148,73,17" Background="#FFF72D2D" Foreground="White" Click="btnStart_Click"/>
+        <GroupBox x:Name="groupBox" Header="Kiểu chơi" HorizontalAlignment="Left" Margin="11,8,0,0" VerticalAlignment="Top" Height="83" Width="238">
+            <StackPanel Height="66" VerticalAlignment="Top" Margin="0,0,0,-5">
+                <RadioButton x:Name="rdoHvH" Content="Người VS Người (Offline)" Checked="rdoHvH_Checked" />
+                <RadioButton x:Name="rdoHvC" Content="Người VS Máy (Offline)" Checked="rdoHvC_Checked" />
+                <RadioButton x:Name="rdoSvH" Content="Server VS Người (Online)" Checked="rdoSvH_Checked" />
+                <RadioButton x:Name="rdoSvC" Content="Server VS Máy (Online)" Checked="rdoSvC_Checked" />
+            </StackPanel>
+        </GroupBox>
+        
+        <TextBox  Width="140" Height="32" Margin="109,95,32,70" x:Name="txtName"/>
+        <Label x:Name="label" Content="Tên người chơi" HorizontalAlignment="Left" Margin="15,98,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.914,-0.133"/>
+
+    </Grid>
+</Window>
