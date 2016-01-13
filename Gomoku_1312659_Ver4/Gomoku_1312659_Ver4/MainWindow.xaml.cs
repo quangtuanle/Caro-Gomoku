@@ -147,7 +147,7 @@ namespace Gomoku_1312659_Ver4
                                     {
                                         //socket.Emit("MyStepIs", JObject.FromObject(new { row = x, col = y })); // Gửi nút cuối rồi thắng
                                         //player = false;
-                                        MessageBox.Show("Người chơi 1 chiến thắng", "Thông báo");
+                                        MessageBox.Show("Bạn đã chiến thắng!", "Thông báo");
                                         return;
                                     }
 
@@ -299,7 +299,8 @@ namespace Gomoku_1312659_Ver4
             }
             else if (type == 3 || type == 4) // Nếu kiểu chơi là 3 hoăc 4 sẽ tiến hành kết nối Server
             {
-                socket = IO.Socket("ws://gomoku-lajosveres.rhcloud.com:8000");
+                //socket = IO.Socket("ws://gomoku-lajosveres.rhcloud.com:8000");
+                socket = IO.Socket(ConfigurationSettings.AppSettings["linkGomoku"]);
                 socket.On(Socket.EVENT_CONNECT, () =>
                 {
                     Thread t = new Thread(() => showChatMessage("Connected", "System"));
@@ -369,7 +370,7 @@ namespace Gomoku_1312659_Ver4
                                     if (IsEndGame(player))
                                     {
                                         //socket.Emit("MyStepIs", JObject.FromObject(new { row = x, col = y })); // 
-                                        MessageBox.Show("Người chơi 1 chiến thắng", "Thông báo");
+                                        MessageBox.Show("Bạn đã chiến thắng!", "Thông báo");
                                         return;
                                     }                            
 
@@ -500,60 +501,66 @@ namespace Gomoku_1312659_Ver4
         // Sự kiện click chuột vào ô vuông
         private void ClickChange(int row, int col)
         {
+            //MessageBox.Show(arrSquare[row][col].ToString());
+
             if (!endGame)
             {
                 switch (type)
                 {
                     case 1: // 2 người chơi
                         {
-                            if (player)
-                            {
-                                if (arrSquare[row][col] == 2 || arrSquare[row][col] == 3)
-                                    break;
-
-                                arrSquare[row][col] = 2;
-                                board = new ChessBoard(arrSquare);
-                                board.ClickSquare += ClickChange;
-                                DataContext = board;
-
-                                if (IsEndGame(player))
+                            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                                (ThreadStart)delegate ()
                                 {
-                                    MessageBox.Show("Người chơi 1 chiến thắng", "Thông báo");
-                                    return;
-                                }
+                                    if (player)
+                                    {
+                                        if (arrSquare[row][col] == 2 || arrSquare[row][col] == 3)
+                                            return;
 
-                                if (isFullSquare())
-                                {
-                                    MessageBox.Show("Gameover", "Thông báo");
-                                    return;
-                                }
+                                        arrSquare[row][col] = 2;
+                                        board = new ChessBoard(arrSquare);
+                                        board.ClickSquare += ClickChange;
+                                        DataContext = board;
 
-                                player = false;
-                            }
-                            else
-                            {
-                                if (arrSquare[row][col] == 2 || arrSquare[row][col] == 3)
-                                    break;
+                                        if (IsEndGame(player))
+                                        {
+                                            MessageBox.Show("Bạn đã chiến thắng!", "Thông báo");
+                                            return;
+                                        }
 
-                                arrSquare[row][col] = 3;
-                                board = new ChessBoard(arrSquare);
-                                board.ClickSquare += ClickChange;
-                                DataContext = board;
+                                        if (isFullSquare())
+                                        {
+                                            MessageBox.Show("Gameover", "Thông báo");
+                                            return;
+                                        }
 
-                                if (IsEndGame(player))
-                                {
-                                    MessageBox.Show("Người chơi 2 chiến thắng", "Thông báo");
-                                    return;
-                                }
+                                        player = false;
+                                    }
+                                    else
+                                    {
+                                        if (arrSquare[row][col] == 2 || arrSquare[row][col] == 3)
+                                            return;
 
-                                if (isFullSquare())
-                                {
-                                    MessageBox.Show("Gameover", "Thông báo");
-                                    return;
-                                }
+                                        arrSquare[row][col] = 3;
+                                        board = new ChessBoard(arrSquare);
+                                        board.ClickSquare += ClickChange;
+                                        DataContext = board;
 
-                                player = true;
-                            }
+                                        if (IsEndGame(player))
+                                        {
+                                            MessageBox.Show("Người chơi 2 chiến thắng", "Thông báo");
+                                            return;
+                                        }
+
+                                        if (isFullSquare())
+                                        {
+                                            MessageBox.Show("Gameover", "Thông báo");
+                                            return;
+                                        }
+
+                                        player = true;
+                                    }
+                                });
 
                             break;
                         }
@@ -571,7 +578,7 @@ namespace Gomoku_1312659_Ver4
 
                                 if (IsEndGame(player))
                                 {
-                                    MessageBox.Show("Người chơi 1 chiến thắng", "Thông báo");
+                                    MessageBox.Show("Bạn đã chiến thắng!", "Thông báo");
                                     return;
                                 }
 
@@ -609,7 +616,7 @@ namespace Gomoku_1312659_Ver4
 
                                         if (IsEndGame(player))
                                         {
-                                            MessageBox.Show("Người chơi 1 chiến thắng", "Thông báo");
+                                            MessageBox.Show("Bạn đã chiến thắng!", "Thông báo");
                                             return;
                                         }
 
@@ -625,18 +632,9 @@ namespace Gomoku_1312659_Ver4
 
                             break;
                         }
-                    case 4: // Máy đánh qua mạng
+                    case 4: 
                         {
-                            /*
-                            if (player && connectSuccess)
-                            {
 
-                            }
-                            else
-                            {
-
-                            }
-                            */
                             break;
                            
                         }
@@ -652,6 +650,7 @@ namespace Gomoku_1312659_Ver4
         int x, y;
         private void DoComputer(object sender, DoWorkEventArgs e)
         {
+            /*
             Random rand = new Random();
 
             do
@@ -660,12 +659,16 @@ namespace Gomoku_1312659_Ver4
                 y = rand.Next(0, 11);
             }
             while (arrSquare[x][y] == 2 || arrSquare[x][y] == 3);
+            */
+            Point NuocDi = new Point();
+            NuocDi = KhoiDongComputer();            
 
-            arrSquare[x][y] = 3;
+            //arrSquare[x][y] = 3;
+            arrSquare[Convert.ToInt32(NuocDi.X)][Convert.ToInt32(NuocDi.Y)] = 3;
 
-            board = new ChessBoard(arrSquare);
-            board.ClickSquare += ClickChange;
-            DataContext = board;
+            //board = new ChessBoard(arrSquare);
+            //board.ClickSquare += ClickChange;
+            //DataContext = board;
 
         }
 
@@ -680,7 +683,8 @@ namespace Gomoku_1312659_Ver4
             arrSquare[rowServer][colServer] = 3;
 
             board = new ChessBoard(arrSquare);
-            board.ClickSquare += ClickChange;
+            if (type == 3)
+                board.ClickSquare += ClickChange;
             DataContext = board;
         }
         
@@ -689,44 +693,55 @@ namespace Gomoku_1312659_Ver4
             //this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 //(ThreadStart)delegate ()
                 {
-                    Random rand = new Random();
+                // ---------------------------------
+                /*
+                Random rand = new Random();
 
-                    do
-                    {
-                        x = rand.Next(0, 11);
-                        y = rand.Next(0, 11);
-                    }
-                    while (arrSquare[x][y] == 2 || arrSquare[x][y] == 3);
+                do
+                {
+                    x = rand.Next(0, 11);
+                    y = rand.Next(0, 11);
+                }
+                while (arrSquare[x][y] == 2 || arrSquare[x][y] == 3);
+                */
+                // -------
+                Point NuocDi = new Point();
+                NuocDi = KhoiDongComputer();
+                x = Convert.ToInt32(NuocDi.X);
+                y = Convert.ToInt32(NuocDi.Y);
 
-                    arrSquare[x][y] = 2;
+                arrSquare[x][y] = 2;
 
-                    board = new ChessBoard(arrSquare);
-                    //board.ClickSquare += ClickChange;
-                    DataContext = board;
+                board = new ChessBoard(arrSquare);
+                //board.ClickSquare += ClickChange;
+                DataContext = board;
 
-                    // Gửi bước đi lên Server
-                    // Phương thức gửi bước đi của mình lên Server
-                    socket.Emit("MyStepIs", JObject.FromObject(new { row = x, col = y }));
+                // Gửi bước đi lên Server
+                // Phương thức gửi bước đi của mình lên Server
+                socket.Emit("MyStepIs", JObject.FromObject(new { row = x, col = y }));
 
-                    if (IsEndGame(player))
-                    {
-                        MessageBox.Show("Người chơi 1 chiến thắng", "Thông báo");
-                        return;
-                    }
+                if (IsEndGame(player))
+                {
+                    MessageBox.Show("Bạn đã chiến thắng!", "Thông báo");
+                    return;
+                }
 
-                    if (isFullSquare())
-                    {
-                        MessageBox.Show("Gameover", "Thông báo");
-                        return;
-                    }
+                if (isFullSquare())
+                {
+                    MessageBox.Show("Gameover", "Thông báo");
+                    return;
+                }
 
-                    player = false;
-                }//);
+                player = false;
+            }//);
         }
-        
-        
+                
         private void CompleteComputerTurn(object sender, RunWorkerCompletedEventArgs e)
         {
+            board = new ChessBoard(arrSquare);
+            board.ClickSquare += ClickChange;
+            DataContext = board;
+
             if (IsEndGame(player))
             {
                 MessageBox.Show("Người chơi 2 chiến thắng", "Thông báo");
@@ -894,5 +909,376 @@ namespace Gomoku_1312659_Ver4
                     chatBox.Items.Add(chatMessage);
                 });
         }
+
+        #region AI
+        private long[] MangDiemTanCong = new long[7] { 0, 9, 54, 162, 1458, 13112, 118008 };
+        private long[] MangDiemPhongNgu = new long[7] { 0, 3, 27, 99, 729, 6561, 59049 };
+
+        
+        public Point KhoiDongComputer()
+        {
+            int demSoODaDi = 0;
+
+            for (int i = 0; i < ROW; i++)
+                for (int j = 0; j < COL; j++)
+                    if (arrSquare[i][j] == 2 || arrSquare[i][j] == 3)
+                        demSoODaDi++;
+
+            Point diemKhoiDong = new Point(0, 0);
+
+            if (demSoODaDi == 0)
+            {
+                //DanhCo(_BanCo.SoCot / 2 * OCo._ChieuRong + 1, _BanCo.SoDong / 2 * OCo._ChieuCao + 1, g);
+                return new Point(COL / 2, ROW / 2);
+            }
+            else
+            {
+                //OCo oco = TimKiemNuocDi();
+                //DanhCo(oco.ViTri.X + 1, oco.ViTri.Y + 1, g);
+                return TimKiemNuocDi();
+            }
+        }
+                
+        private Point TimKiemNuocDi()
+        {
+            Point pointResult = new Point();
+            long DiemMax = 0;
+            for (int i = 0; i < ROW; i++)
+            {
+                for (int j = 0; j < COL; j++)
+                {
+                    if (arrSquare[i][j] == 0 || arrSquare[i][j] == 1)
+                    {
+                        long DiemTanCong = DiemTanCong_DuyetDoc(i, j) + DiemTanCong_DuyetNgang(i, j) + DiemTanCong_DuyetCheoNguoc(i, j) + DiemTanCong_DuyetCheoXuoi(i, j);
+                        long DiemPhongNgu = DiemPhongNgu_DuyetDoc(i, j) + DiemPhongNgu_DuyetNgang(i, j) + DiemPhongNgu_DuyetCheoNguoc(i, j) + DiemPhongNgu_DuyetCheoXuoi(i, j);
+                        long DiemTam = DiemTanCong > DiemPhongNgu ? DiemTanCong : DiemPhongNgu;
+                        if (DiemMax < DiemTam)
+                        {
+                            DiemMax = DiemTam;
+                            pointResult = new Point(i, j);
+
+                        }
+                    }
+                }
+            }
+
+            return pointResult;
+        }
+
+        #region Tấn công
+        private long DiemTanCong_DuyetDoc(int currDong, int currCot)
+        {
+            long DiemTong = 0;
+            int SoQuanTa = 0;
+            int SoQuanDich = 0;
+            for (int Dem = 1; Dem < 6 && currDong + Dem < ROW; Dem++)
+            {
+                if (arrSquare[currDong + Dem][currCot] == 2)
+                    SoQuanTa++;
+                else if (arrSquare[currDong + Dem][currCot] == 3)
+                {
+                    SoQuanDich++;
+                    break;
+                }
+                else
+                    break;
+            }
+
+            for (int Dem = 1; Dem < 6 && currDong - Dem >= 0; Dem++)
+            {
+                if (arrSquare[currDong - Dem][currCot] == 2)
+                    SoQuanTa++;
+                else if (arrSquare[currDong - Dem][currCot] == 3)
+                {
+                    SoQuanDich++;
+                    break;
+                }
+                else
+                    break;
+            }
+            if (SoQuanDich == 2)
+                return 0;
+            DiemTong -= MangDiemPhongNgu[SoQuanDich + 1] * 2;
+            DiemTong += MangDiemTanCong[SoQuanTa];
+            return DiemTong;
+        }
+
+        private long DiemTanCong_DuyetNgang(int currDong, int currCot)
+        {
+            long DiemTong = 0;
+            int SoQuanTa = 0;
+            int SoQuanDich = 0;
+            for (int Dem = 1; Dem < 6 && currCot + Dem < COL; Dem++)
+            {
+                if (arrSquare[currDong][currCot + Dem] == 2)
+                    SoQuanTa++;
+                else if (arrSquare[currDong][currCot + Dem] == 3)
+                {
+                    SoQuanDich++;
+                    break;
+                }
+                else
+                    break;
+            }
+
+            for (int Dem = 1; Dem < 6 && currCot - Dem >= 0; Dem++)
+            {
+                if (arrSquare[currDong][currCot - Dem] == 2)
+                    SoQuanTa++;
+                else if (arrSquare[currDong][currCot - Dem] == 3)
+                {
+                    SoQuanDich++;
+                    break;
+                }
+                else
+                    break;
+            }
+            if (SoQuanDich == 2)
+                return 0;
+            DiemTong -= MangDiemPhongNgu[SoQuanDich + 1] * 2;
+            DiemTong += MangDiemTanCong[SoQuanTa];
+            return DiemTong;
+        }
+
+        private long DiemTanCong_DuyetCheoNguoc(int currDong, int currCot)
+        {
+            long DiemTong = 0;
+            int SoQuanTa = 0;
+            int SoQuanDich = 0;
+            for (int Dem = 1; Dem < 6 && currCot + Dem < COL && currDong - Dem >= 0; Dem++)
+            {
+                if (arrSquare[currDong - Dem][currCot + Dem] == 2)
+                    SoQuanTa++;
+                else if (arrSquare[currDong - Dem][currCot + Dem] == 3)
+                {
+                    SoQuanDich++;
+                    break;
+                }
+                else
+                    break;
+            }
+
+            for (int Dem = 1; Dem < 6 && currCot - Dem >= 0 && currDong + Dem < ROW; Dem++)
+            {
+                if (arrSquare[currDong + Dem][currCot - Dem] == 2)
+                    SoQuanTa++;
+                else if (arrSquare[currDong + Dem][currCot - Dem] == 3)
+                {
+                    SoQuanDich++;
+                    break;
+                }
+                else
+                    break;
+            }
+            if (SoQuanDich == 2)
+                return 0;
+            DiemTong -= MangDiemPhongNgu[SoQuanDich + 1] * 2;
+            DiemTong += MangDiemTanCong[SoQuanTa];
+            return DiemTong;
+        }
+
+        private long DiemTanCong_DuyetCheoXuoi(int currDong, int currCot)
+        {
+            long DiemTong = 0;
+            int SoQuanTa = 0;
+            int SoQuanDich = 0;
+            for (int Dem = 1; Dem < 6 && currCot + Dem < COL && currDong + Dem < ROW; Dem++)
+            {
+                if (arrSquare[currDong + Dem][currCot + Dem] == 2)
+                    SoQuanTa++;
+                else if (arrSquare[currDong + Dem][currCot + Dem] == 3)
+                {
+                    SoQuanDich++;
+                    break;
+                }
+                else
+                    break;
+            }
+
+            for (int Dem = 1; Dem < 6 && currCot - Dem >= 0 && currDong - Dem >= 0; Dem++)
+            {
+                if (arrSquare[currDong - Dem][currCot - Dem] == 2)
+                    SoQuanTa++;
+                else if (arrSquare[currDong - Dem][currCot - Dem] == 3)
+                {
+                    SoQuanDich++;
+                    break;
+                }
+                else
+                    break;
+            }
+            if (SoQuanDich == 2)
+                return 0;
+            DiemTong -= MangDiemPhongNgu[SoQuanDich + 1] * 2;
+            DiemTong += MangDiemTanCong[SoQuanTa];
+            return DiemTong;
+        }
+        #endregion
+
+        #region Phòng ngự
+        private long DiemPhongNgu_DuyetDoc(int currDong, int currCot)
+        {
+            long DiemTong = 0;
+            int SoQuanTa = 0;
+            int SoQuanDich = 0;
+            for (int Dem = 1; Dem < 6 && currDong + Dem < ROW; Dem++)
+            {
+                if (arrSquare[currDong + Dem][currCot] == 2)
+                {
+                    SoQuanTa++;
+                    break;
+                }
+                else if (arrSquare[currDong + Dem][currCot] == 3)
+                {
+                    SoQuanDich++;
+                }
+                else
+                    break;
+            }
+
+            for (int Dem = 1; Dem < 6 && currDong - Dem >= 0; Dem++)
+            {
+                if (arrSquare[currDong - Dem][currCot] == 2)
+                {
+                    SoQuanTa++;
+                    break;
+                }
+                else if (arrSquare[currDong - Dem][currCot] == 3)
+                {
+                    SoQuanDich++;
+                }
+                else
+                    break;
+            }
+            if (SoQuanTa == 2)
+                return 0;
+            DiemTong += MangDiemPhongNgu[SoQuanDich];
+            return DiemTong;
+        }
+
+        private long DiemPhongNgu_DuyetNgang(int currDong, int currCot)
+        {
+            long DiemTong = 0;
+            int SoQuanTa = 0;
+            int SoQuanDich = 0;
+            for (int Dem = 1; Dem < 6 && currCot + Dem < COL; Dem++)
+            {
+                if (arrSquare[currDong][currCot + Dem] == 2)
+                {
+                    SoQuanTa++;
+                    break;
+                }
+                else if (arrSquare[currDong][currCot + Dem] == 3)
+                {
+                    SoQuanDich++;
+                }
+                else
+                    break;
+            }
+
+            for (int Dem = 1; Dem < 6 && currCot - Dem >= 0; Dem++)
+            {
+                if (arrSquare[currDong][currCot - Dem] == 2)
+                {
+                    SoQuanTa++;
+                    break;
+                }
+                else if (arrSquare[currDong][currCot - Dem] == 3)
+                {
+                    SoQuanDich++;
+
+                }
+                else
+                    break;
+            }
+            if (SoQuanTa == 2)
+                return 0;
+            DiemTong += MangDiemPhongNgu[SoQuanDich];
+            return DiemTong;
+        }
+
+        private long DiemPhongNgu_DuyetCheoNguoc(int currDong, int currCot)
+        {
+            long DiemTong = 0;
+            int SoQuanTa = 0;
+            int SoQuanDich = 0;
+            for (int Dem = 1; Dem < 6 && currCot + Dem < COL && currDong - Dem >= 0; Dem++)
+            {
+                if (arrSquare[currDong - Dem][currCot + Dem] == 2)
+                {
+                    SoQuanTa++;
+                    break;
+                }
+                else if (arrSquare[currDong - Dem][currCot + Dem] == 3)
+                {
+                    SoQuanDich++;
+                }
+                else
+                    break;
+            }
+
+            for (int Dem = 1; Dem < 6 && currCot - Dem >= 0 && currDong + Dem < ROW; Dem++)
+            {
+                if (arrSquare[currDong + Dem][currCot - Dem] == 2)
+                {
+                    SoQuanTa++;
+                    break;
+                }
+                else if (arrSquare[currDong + Dem][currCot - Dem] == 3)
+                {
+                    SoQuanDich++;
+                }
+                else
+                    break;
+            }
+            if (SoQuanTa == 2)
+                return 0;
+            DiemTong += MangDiemPhongNgu[SoQuanTa];
+            return DiemTong;
+        }
+
+        private long DiemPhongNgu_DuyetCheoXuoi(int currDong, int currCot)
+        {
+            long DiemTong = 0;
+            int SoQuanTa = 0;
+            int SoQuanDich = 0;
+            for (int Dem = 1; Dem < 6 && currCot + Dem < COL && currDong + Dem < ROW; Dem++)
+            {
+                if (arrSquare[currDong + Dem][currCot + Dem] == 2)
+                {
+                    SoQuanTa++;
+                    break;
+                }
+                else if (arrSquare[currDong + Dem][currCot + Dem] == 3)
+                {
+                    SoQuanDich++;
+                }
+                else
+                    break;
+            }
+
+            for (int Dem = 1; Dem < 6 && currCot - Dem >= 0 && currDong - Dem >= 0; Dem++)
+            {
+                if (arrSquare[currDong - Dem][currCot - Dem] == 2)
+                {
+                    SoQuanTa++;
+                    break;
+                }
+                else if (arrSquare[currDong - Dem][currCot - Dem] == 3)
+                {
+                    SoQuanDich++;
+                }
+                else
+                    break;
+            }
+            if (SoQuanTa == 2)
+                return 0;
+
+            DiemTong += MangDiemPhongNgu[SoQuanTa];
+            return DiemTong;
+        }
+        #endregion
+
+        #endregion
     }
 }
