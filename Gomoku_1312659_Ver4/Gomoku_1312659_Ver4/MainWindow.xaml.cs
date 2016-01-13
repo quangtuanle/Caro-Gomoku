@@ -17,6 +17,7 @@ using Quobject.SocketIoClientDotNet.Client;
 using System.ComponentModel;
 using System.Threading;
 using System.Windows.Threading;
+using System.Configuration;
 
 namespace Gomoku_1312659_Ver4
 {
@@ -54,6 +55,7 @@ namespace Gomoku_1312659_Ver4
 
         public MainWindow()
         {
+            /*
             InitializeComponent();
 
             // Khởi tạo mảng các ô cờ: Dùng để đánh dấu tình trạng của ô cờ
@@ -78,7 +80,7 @@ namespace Gomoku_1312659_Ver4
             }
             else if (type == 3 || type == 4) // Nếu kiểu chơi là 3 hoăc 4 sẽ tiến hành kết nối Server
             {
-                socket = IO.Socket("ws://gomoku-lajosveres.rhcloud.com:8000");
+                socket = IO.Socket(ConfigurationSettings.AppSettings["linkGomoku"]);
                 socket.On(Socket.EVENT_CONNECT, () =>
                 {
                     Thread t = new Thread(() => showChatMessage("Connected", "System"));
@@ -143,6 +145,8 @@ namespace Gomoku_1312659_Ver4
 
                                     if (IsEndGame(player))
                                     {
+                                        //socket.Emit("MyStepIs", JObject.FromObject(new { row = x, col = y })); // Gửi nút cuối rồi thắng
+                                        //player = false;
                                         MessageBox.Show("Người chơi 1 chiến thắng", "Thông báo");
                                         return;
                                     }
@@ -264,7 +268,8 @@ namespace Gomoku_1312659_Ver4
                 //bWorkerServer.DoWork += new DoWorkEventHandler(DoPlayerServer);
                 //bWorkerServer.RunWorkerCompleted += new RunWorkerCompletedEventHandler(CompleteComputerTurn);
                 //bWorkerServer.RunWorkerAsync();
-            }           
+            }  
+            */         
         }
 
         public MainWindow(int typeOption, string namePlayer)
@@ -286,7 +291,7 @@ namespace Gomoku_1312659_Ver4
 
             showChatMessage("Trò chơi bắt đầu", "System");
 
-            if (type == 1 || type == 2)
+            if (type == 2)
             {
                 bWorker.DoWork += new DoWorkEventHandler(DoComputer);
                 bWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(CompleteComputerTurn);
@@ -357,15 +362,16 @@ namespace Gomoku_1312659_Ver4
                                     //board.ClickSquare += ClickChange;
                                     DataContext = board;
 
-                                    if (IsEndGame(player))
-                                    {
-                                        MessageBox.Show("Người chơi 1 chiến thắng", "Thông báo");
-                                        return;
-                                    }
-
                                     // Gửi bước đi lên Server
                                     // Phương thức gửi bước đi của mình lên Server
                                     socket.Emit("MyStepIs", JObject.FromObject(new { row = x, col = y }));
+
+                                    if (IsEndGame(player))
+                                    {
+                                        //socket.Emit("MyStepIs", JObject.FromObject(new { row = x, col = y })); // 
+                                        MessageBox.Show("Người chơi 1 chiến thắng", "Thông báo");
+                                        return;
+                                    }                            
 
                                     player = false;
                                 });
@@ -586,8 +592,8 @@ namespace Gomoku_1312659_Ver4
                         {
                             if (player && connectSuccess)
                             {
-                                this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
-                                    (ThreadStart)delegate ()
+                                //this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                                    //(ThreadStart)delegate ()
                                     {
                                         if (arrSquare[row][col] == 2 || arrSquare[row][col] == 3)
                                             return;
@@ -596,6 +602,10 @@ namespace Gomoku_1312659_Ver4
                                         board = new ChessBoard(arrSquare);
                                         board.ClickSquare += ClickChange;
                                         DataContext = board;
+
+                                        // Gửi bước đi lên Server
+                                        // Phương thức gửi bước đi của mình lên Server
+                                        socket.Emit("MyStepIs", JObject.FromObject(new { row = row, col = col }));
 
                                         if (IsEndGame(player))
                                         {
@@ -607,20 +617,17 @@ namespace Gomoku_1312659_Ver4
                                         {
                                             MessageBox.Show("Gameover", "Thông báo");
                                             return;
-                                        }
-
-                                        // Gửi bước đi lên Server
-                                        // Phương thức gửi bước đi của mình lên Server
-                                        socket.Emit("MyStepIs", JObject.FromObject(new { row = row, col = col }));
+                                        }                                     
 
                                         player = false;
-                                    });
+                                    }//);
                             }
 
                             break;
                         }
                     case 4: // Máy đánh qua mạng
                         {
+                            /*
                             if (player && connectSuccess)
                             {
 
@@ -629,8 +636,9 @@ namespace Gomoku_1312659_Ver4
                             {
 
                             }
-
+                            */
                             break;
+                           
                         }
                 }
             }
@@ -675,11 +683,11 @@ namespace Gomoku_1312659_Ver4
             board.ClickSquare += ClickChange;
             DataContext = board;
         }
-
+        
         private void DoComputerServer()
         {
-            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
-                (ThreadStart)delegate ()
+            //this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                //(ThreadStart)delegate ()
                 {
                     Random rand = new Random();
 
@@ -696,6 +704,10 @@ namespace Gomoku_1312659_Ver4
                     //board.ClickSquare += ClickChange;
                     DataContext = board;
 
+                    // Gửi bước đi lên Server
+                    // Phương thức gửi bước đi của mình lên Server
+                    socket.Emit("MyStepIs", JObject.FromObject(new { row = x, col = y }));
+
                     if (IsEndGame(player))
                     {
                         MessageBox.Show("Người chơi 1 chiến thắng", "Thông báo");
@@ -708,14 +720,11 @@ namespace Gomoku_1312659_Ver4
                         return;
                     }
 
-                    // Gửi bước đi lên Server
-                    // Phương thức gửi bước đi của mình lên Server
-                    socket.Emit("MyStepIs", JObject.FromObject(new { row = x, col = y }));
-
                     player = false;
-                });
+                }//);
         }
-
+        
+        
         private void CompleteComputerTurn(object sender, RunWorkerCompletedEventArgs e)
         {
             if (IsEndGame(player))
@@ -732,7 +741,7 @@ namespace Gomoku_1312659_Ver4
 
             player = true;
         }
-
+        
         // Kiểm tra kết thúc
         // Kiểm tra đã đi hết tất cả các ô chưa
         public bool isFullSquare()
